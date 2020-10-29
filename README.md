@@ -6,3 +6,10 @@
 
 ### Generate public key from out private key
 *ssh-keygen -y -f ~/.ssh/id_rsa > public_key*
+
+## To Do
+* Create DynamoDB table
+* Create IAM instance role so instance can access DynamoDB and KMS
+* Create unseal KMS key
+* Install and config vault in user_data
+
