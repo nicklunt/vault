@@ -11,6 +11,6 @@
 - [x]install vault 
 - [ ] Create DynamoDB table
 - [ ] Create IAM instance role so instance can access DynamoDB and KMS
-* [ ] Create unseal KMS key
-* [ ] Install and config vault in user_data
+- [ ] Create unseal KMS key
+- [ ] Install and config vault in user_data
 
