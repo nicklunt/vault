@@ -1,7 +1,7 @@
 ## Todo
-- Setup VPC and SGs
-- create instance with some user_data for vault install
-- install vault 
+- ~~Setup VPC and SGs~~
+- ~~create instance with some user_data for vault install~~
+- ~~install vault~~
 - [ ] Create DynamoDB table
 - [ ] Create IAM instance role so instance can access DynamoDB and KMS
 - [ ] Create unseal KMS key
