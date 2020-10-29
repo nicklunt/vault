@@ -1,4 +1,4 @@
-## Set up a Hashicorp Vault server which uses AWS KMS to unseal, and the vault data is stored on AWS DynamoDB.
+## Setup a Hashicorp Vault server which uses AWS KMS to unseal, and the vault data is stored on AWS DynamoDB.
 
 ### Vault instance IAM Profile
 * KMS
