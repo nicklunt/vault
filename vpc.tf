@@ -17,10 +17,30 @@ resource "aws_subnet" "public-subnet" {
     }
 }
 
+# Route Table
+resource "aws_route_table" "public-route-table" {
+    vpc_id = aws_vpc.this.id
+
+    route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = aws_internet_gateway.vault-gateway.id
+    }
+
+    tags = {
+        Name = "Public Gateway"
+    }
+}
+
+# Associate the Route Table with our public subnet
+resource "aws_route_table_association" "public-assoc" {
+    subnet_id = aws_subnet.public-subnet.id
+    route_table_id = aws_route_table.public-route-table.id
+}
+
 # Security Group
 resource "aws_security_group" "sg-vault" {
     vpc_id = aws_vpc.this.id
-
+    name = "Vault SG"
     tags = {
         Name = "Vault SG"
     }
@@ -48,12 +68,12 @@ resource "aws_security_group" "sg-vault" {
     }
 }
 
-# # Internet Gateway
-# resource "aws_internet_gateway" "vault-gateway" {
-#     vpc_id = aws_vpc.this.id
+# Internet Gateway
+resource "aws_internet_gateway" "vault-gateway" {
+    vpc_id = aws_vpc.this.id
 
-#     tags = {
-#         Name = "Vault Internet Gateway"
-#     }
-# }
+    tags = {
+        Name = "Vault Internet Gateway"
+    }
+}
 
