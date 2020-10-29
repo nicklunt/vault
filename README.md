@@ -1,3 +1,4 @@
+## Todo
 - install vault 
 - [ ] Create DynamoDB table
 - [ ] Create IAM instance role so instance can access DynamoDB and KMS
