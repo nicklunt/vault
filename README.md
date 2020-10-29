@@ -1,9 +1,11 @@
 ## Todo
+- Setup VPC and SGs
+- create instance with some user_data for vault install
 - install vault 
 - [ ] Create DynamoDB table
 - [ ] Create IAM instance role so instance can access DynamoDB and KMS
 - [ ] Create unseal KMS key
-- [ ] configure vault
+- [ ] Update user_data to configure vault
 
 ## Setup a Hashicorp Vault server which uses AWS KMS to unseal, and the vault data is stored on AWS DynamoDB.
 
