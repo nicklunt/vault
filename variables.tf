@@ -28,10 +28,10 @@ variable "private-subnet" {
 
 variable "ingress-rules" {
     type = list(number)
-    default = [22, 8002]
+    default = [22, 8002, 443]
 }
 
 variable "egress-rules" {
     type = list(number)
-    default = [22, 8002]
+    default = [22, 8002, 443]
 }

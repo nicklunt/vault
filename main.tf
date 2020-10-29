@@ -12,6 +12,9 @@ resource "aws_instance" "vault" {
     subnet_id = aws_subnet.public-subnet.id
     vpc_security_group_ids = [aws_security_group.sg-vault.id]
     associate_public_ip_address = true
+
+    user_data = file("vault.sh")
+    
     tags = {
         Name = "Vault Server"
     }
