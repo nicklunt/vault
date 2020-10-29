@@ -11,7 +11,7 @@
 * KMS
 * DynamoDB
 
-### Generate public key from out private key
+### Generate public key from private key
 *ssh-keygen -y -f ~/.ssh/id_rsa > public_key*
 
 
