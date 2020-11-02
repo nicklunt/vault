@@ -17,7 +17,7 @@ resource "aws_subnet" "public-subnet" {
     }
 }
 
-# Route Table
+# Route Table for IG
 resource "aws_route_table" "public-route-table" {
     vpc_id = aws_vpc.this.id
 
