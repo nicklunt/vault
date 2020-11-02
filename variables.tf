@@ -10,7 +10,7 @@ variable "ssh-key" {
 }
 
 variable "ami" {
-    description = "eu-west-2 Amazon Linux 2 AMI"
+    description = "eu-west-2 London Amazon Linux 2 AMI"
     default = "ami-0a669382ea0feb73a"
 }
 
