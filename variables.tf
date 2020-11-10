@@ -35,3 +35,8 @@ variable "egress-rules" {
     type = list(number)
     default = [22, 8002, 443]
 }
+
+variable "dynamodb-table" {
+    type = string
+    default = "vault-table"
+}
