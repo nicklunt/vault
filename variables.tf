@@ -40,3 +40,4 @@ variable "dynamodb-table" {
   type    = string
   default = "vault-table"
 }
+
