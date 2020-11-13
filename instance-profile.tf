@@ -37,19 +37,19 @@ data "aws_iam_policy_document" "dynamodb-policy-doc" {
       "dynamodb:PutItem"
     ]
     resources = [
-      "arn:aws:dynamodb:::vault-table"
+      "arn:aws:dynamodb:::${var.dynamodb-table}"
     ]
-    
+
   }
 }
 
 resource "aws_iam_policy" "dynamodb-policy" {
-  name = "dynamodb-policy"
+  name   = "dynamodb-policy"
   policy = data.aws_iam_policy_document.dynamodb-policy-doc.json
 }
 
 resource "aws_iam_policy_attachment" "dynamodb-attach" {
-  name = "vault-dynamodb-policy-attach"
-  roles       = [aws_iam_role.vault-role.name]
+  name       = "vault-dynamodb-policy-attach"
+  roles      = [aws_iam_role.vault-role.name]
   policy_arn = aws_iam_policy.dynamodb-policy.arn
 }
