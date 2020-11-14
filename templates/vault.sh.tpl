@@ -2,6 +2,10 @@
 
 set -xe 
 
+# Send userdata to log
+[[ ! -d /var/log/userdata ]] && mkdir -p /var/log/userdata/
+exec > >(tee /var/log/userdata/userdata.log | logger -t user-data -s 2>/dev/console) 2>&1
+
 # Get vault from hashicorp
 # wget https://releases.hashicorp.com/vault/1.5.5/vault_1.5.5_linux_amd64.zip  -O /tmp/vault.zip
 wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
@@ -9,31 +13,37 @@ wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /
 # Unzip /tmp/vault.zip to /usr/bin/vault
 unzip /tmp/vault.zip -d /usr/bin/
 
-# Create systemd for vault
+# Setup vault user
+groupadd --force --system vault
+if ! getent passwd vault >/dev/null; then
+    adduser --system --gid vault --no-create-home --comment "vault owner" --shell /bin/false vault >/dev/null
+fi
+
+# Login profile
+cat << EOF > /etc/profile.d/vault.sh
+export VAULT_ADDR=http://127.0.0.1:8200
+export VAULT_SKIP_VERIFY=true
+EOF
+
+# Systemd service for vault
 cat > /usr/lib/systemd/system/vault.service <<-EOF
 [Unit]
-Description=Vault service
+Description=Vault Service
+Requires=network-online.target
 After=network-online.target
-
 [Service]
-PrivateDevices=yes
-PrivateTmp=yes
-ProtectSystem=full
-ProtectHome=read-only
-SecureBits=keep-caps
-Capabilities=CAP_IPC_LOCK+ep
-CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
-NoNewPrivileges=yes
-ExecStart=/bin/vault server -config=/etc/vault/vault.conf
-KillSignal=SIGINT
-TimeoutStopSec=30s
 Restart=on-failure
-StartLimitInterval=60s
-StartLimitBurst=3
-
+PermissionsStartOnly=true
+ExecStartPre=/sbin/setcap 'cap_ipc_lock=+ep' /bin/vault
+ExecStart=/bin/vault server -config /etc/vault/vault.conf
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGTERM
+User=vault
+Group=vault
 [Install]
 WantedBy=multi-user.target
 EOF
+
 
 systemctl daemon-reload
 systemctl enable vault
@@ -57,14 +67,20 @@ storage "dynamodb" {
 
 seal "awskms" {
     region      = "${region}"
-    kms_key_id  = ${unseal-key}
+    kms_key_id  = "${unseal-key}"
 }
 EOF
 
+chown -R vault:vault /etc/vault
+chmod -R 0644 /etc/vault/*
+
 systemctl start vault
+sleep 10
+systemctl restart vault
+sleep 10
 
-sleep 30
+systemctl status vault | tee ~/vault-systemd-status.txt
 
-## Initialise vault
-vault operator init > ~/vault-init-out.txt 2>&1
+## Initialise and auto unseal vault
+vault operator init -recovery-shares=1 -recovery-threshold=1 | tee ~/vault-init-out.txt
 

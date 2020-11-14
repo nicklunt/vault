@@ -1,55 +1,77 @@
-resource "aws_iam_instance_profile" "vault-profile" {
-  name = "vault-profile"
-  role = aws_iam_role.vault-role.name
-}
-
-resource "aws_iam_role" "vault-role" {
-  name = "vault-role"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "dynamodb.amazonaws.com"
-      },
-      "Effect": "Allow"
-    }
-  ]
-}
-EOF
-}
-
-data "aws_iam_policy_document" "dynamodb-policy-doc" {
+data "aws_iam_policy_document" "assume_role" {
   statement {
-    sid = "dynamodb"
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
 
-    actions = [
-      "dynamodb:Get*",
-      "dynamodb:Describe*",
-      "dynamodb:Query",
-      "dynamodb:Scan",
-      "dynamodb:CreateTable",
-      "dynamodb:Delete",
-      "dynamodb:Update",
-      "dynamodb:PutItem"
-    ]
-    resources = [
-      "arn:aws:dynamodb:::${var.dynamodb-table}"
-    ]
-
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
   }
 }
 
-resource "aws_iam_policy" "dynamodb-policy" {
-  name   = "dynamodb-policy"
-  policy = data.aws_iam_policy_document.dynamodb-policy-doc.json
+data "aws_iam_policy_document" "vault-kms-unseal" {
+  statement {
+    sid       = "VaultKMSUnseal"
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:DescribeKey"
+    ]
+  }
+
+  statement {
+    sid       = "VaultDynamoDB"
+    effect    = "Allow"
+    resources = ["${aws_dynamodb_table.vault-table.arn}"]
+
+    actions = [
+      "dynamodb:DescribeLimits",
+      "dynamodb:DescribeTimeToLive",
+      "dynamodb:ListTagsOfResource",
+      "dynamodb:DescribeReservedCapacityOfferings",
+      "dynamodb:DescribeReservedCapacity",
+      "dynamodb:ListTables",
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:CreateTable",
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:GetRecords",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:UpdateItem",
+      "dynamodb:Scan",
+      "dynamodb:DescribeTable"
+    ]
+  }
+
+  statement {
+    sid       = "IAM"
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "iam:GetInstanceProfile"
+    ]
+  }
 }
 
-resource "aws_iam_policy_attachment" "dynamodb-attach" {
-  name       = "vault-dynamodb-policy-attach"
-  roles      = [aws_iam_role.vault-role.name]
-  policy_arn = aws_iam_policy.dynamodb-policy.arn
+resource "aws_iam_role" "vault-kms-unseal" {
+  name               = "vault-kms-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+resource "aws_iam_role_policy" "vault-kms-unseal" {
+  name   = "vault-kms-unseal-role-policy"
+  role   = aws_iam_role.vault-kms-unseal.id
+  policy = data.aws_iam_policy_document.vault-kms-unseal.json
+}
+
+resource "aws_iam_instance_profile" "vault-kms-unseal" {
+  name = "vault-kms-unseal-instance-profile"
+  role = aws_iam_role.vault-kms-unseal.name
 }

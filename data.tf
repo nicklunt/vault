@@ -6,4 +6,6 @@ data "template_file" "userdata" {
     dynamodb-table = var.dynamodb-table
     unseal-key     = aws_kms_key.vault-unseal-key.id
   }
+
+  depends_on = [ aws_kms_key.vault-unseal-key ]
 }
