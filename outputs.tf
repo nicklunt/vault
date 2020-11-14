@@ -13,3 +13,7 @@ output "UnsealKeyARN" {
 output "DBTable" {
   value = aws_dynamodb_table.vault-table.arn
 }
+
+output "InstanceRoleName" {
+  value = aws_iam_role.vault-kms-unseal.name
+}

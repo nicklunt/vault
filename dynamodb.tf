@@ -5,14 +5,14 @@ resource "aws_dynamodb_table" "vault-table" {
   hash_key       = "Path"
   range_key      = "Key"
   attribute {
-      name = "Path"
-      type = "S"
-    }
+    name = "Path"
+    type = "S"
+  }
 
   attribute {
-      name = "Key"
-      type = "S"
-    }
+    name = "Key"
+    type = "S"
+  }
 
   tags = {
     Name = "vault-table"

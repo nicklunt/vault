@@ -19,4 +19,6 @@ resource "aws_instance" "vault" {
   tags = {
     Name = "Vault Server"
   }
+
+  depends_on = [aws_kms_key.vault-unseal-key]
 }

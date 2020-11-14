@@ -41,3 +41,4 @@ variable "dynamodb-table" {
   default = "vault-table"
 }
 
+

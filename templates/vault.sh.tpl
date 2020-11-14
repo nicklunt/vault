@@ -44,7 +44,6 @@ Group=vault
 WantedBy=multi-user.target
 EOF
 
-
 systemctl daemon-reload
 systemctl enable vault
 
@@ -74,13 +73,45 @@ EOF
 chown -R vault:vault /etc/vault
 chmod -R 0644 /etc/vault/*
 
-systemctl start vault
-sleep 10
-systemctl restart vault
-sleep 10
+export VAULT_ADDR=http://127.0.0.1:8200
+export VAULT_SKIP_VERIFY=true
 
-systemctl status vault | tee ~/vault-systemd-status.txt
+systemctl start vault
+sleep 20
 
 ## Initialise and auto unseal vault
-vault operator init -recovery-shares=1 -recovery-threshold=1 | tee ~/vault-init-out.txt
+vault operator init -recovery-shares=1 -recovery-threshold=1 2>&1 | tee ~/vault-init-out.txt
+sleep 20
+vault status | tee -a ~/vault-status.txt
 
+## Vault should now be running and unsealed
+
+# Set the VAULT_TOKEN var so we can interact with vault
+VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
+# Now remove the root token from the system
+# rm -rf ~/vault-init-out.txt
+
+# Enable logging
+mkdir /var/log/vault
+chown vault:vault /var/log/vault
+vault audit enable file file_path=/var/log/vault/vault.log
+
+# Now vault is up and running, we want to give the instance role of the vault server 
+# the ability to login with the AWS auth engine.
+
+# install jq - AWS yum repos are not reliable for this, so grab it from github
+wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+chmod +x jq-linux64
+mv jq-linux64 /usr/bin/jq
+
+# Our account ID
+account_id=$(curl -Ss http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId')
+
+# Our instance role
+vault_instance_role="arn:aws:iam:${region}:$${account_id}:role/${instance-role}"
+
+# Use the root token to setup the admin policy, after which we can remove the root token from the server.
+VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
+
+# Create the admin policy
+# vault policy write "admin-policy" 
