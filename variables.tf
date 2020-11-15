@@ -3,6 +3,11 @@ variable "region" {
   default = "eu-west-2"
 }
 
+variable "account_id" {
+  description = "AWS Account ID - REMOVE BEFORE PUBLISHING"
+  default = "329035065473"
+}
+
 variable "ssh-key" {
   type        = string
   description = "File holding my public ssh key"
@@ -41,4 +46,8 @@ variable "dynamodb-table" {
   default = "vault-table"
 }
 
+variable "bucket_name" {
+  description = "Bucket to upload any required files"
+  default = "vault-conf-bucket-01010101"
+}
 

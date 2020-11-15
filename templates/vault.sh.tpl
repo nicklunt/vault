@@ -6,6 +6,11 @@ set -xe
 [[ ! -d /var/log/userdata ]] && mkdir -p /var/log/userdata/
 exec > >(tee /var/log/userdata/userdata.log | logger -t user-data -s 2>/dev/console) 2>&1
 
+# install jq - I found AWS yum repos are not reliable for this, so grab it from github
+wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+chmod +x jq-linux64
+mv jq-linux64 /usr/bin/jq
+
 # Get vault from hashicorp
 # wget https://releases.hashicorp.com/vault/1.5.5/vault_1.5.5_linux_amd64.zip  -O /tmp/vault.zip
 wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
@@ -22,8 +27,8 @@ fi
 # Login profile
 cat << EOF > /etc/profile.d/vault.sh
 export VAULT_ADDR=http://127.0.0.1:8200
-export VAULT_SKIP_VERIFY=true
 EOF
+# export VAULT_SKIP_VERIFY=true
 
 # Systemd service for vault
 cat > /usr/lib/systemd/system/vault.service <<-EOF
@@ -92,26 +97,27 @@ VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF
 # rm -rf ~/vault-init-out.txt
 
 # Enable logging
-mkdir /var/log/vault
-chown vault:vault /var/log/vault
-vault audit enable file file_path=/var/log/vault/vault.log
+# mkdir /var/log/vault
+# chown vault:vault /var/log/vault
+# vault audit enable file file_path=/var/log/vault/vault.log
 
 # Now vault is up and running, we want to give the instance role of the vault server 
 # the ability to login with the AWS auth engine.
 
-# install jq - AWS yum repos are not reliable for this, so grab it from github
-wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-chmod +x jq-linux64
-mv jq-linux64 /usr/bin/jq
+# Our instance role. Used to give this instance access to vault with the AWS engine
+# vault_instance_role="arn:aws:iam:${region}:$(curl -Ss http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId'):role/${instance-role}"
 
-# Our account ID
-account_id=$(curl -Ss http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId')
-
-# Our instance role
-vault_instance_role="arn:aws:iam:${region}:$${account_id}:role/${instance-role}"
-
-# Use the root token to setup the admin policy, after which we can remove the root token from the server.
-VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
+# Enable the vault AWS engine
+vault secrets enable aws
 
 # Create the admin policy
-# vault policy write "admin-policy" 
+vault policy write "admin-policy" /var/tmp/vault-admin-policy.hcl
+
+# Give this instance admin privileges to vault, tied to vault_instance_role.
+vault write \
+    auth/aws/role/admin \
+    auth_type=iam \
+    policies=admin-policy \
+    max_ttl=1h
+    bound_iam_principal_arn=${vault_instance_role}
+
