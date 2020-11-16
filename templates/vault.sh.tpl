@@ -104,9 +104,12 @@ if [ "$${INITIALIZED}" != "true" ]; then
     # Set the VAULT_TOKEN var so we can interact with vault
     export VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
 
+    # Get the unseal key
+    export RECOVERY_KEY=$(grep '^Recovery Key' ~/vault-init-out.txt | awk '{print $NF}')
+
     # Save the root token to aws secrets manager, then we can delete ~/vault-init-out.txt
     # The secret resource has already been created by terraform.
-    aws secretsmanager update-secret --secret-id ${secret_id} --secret-string "$${VAULT_TOKEN}" --region ${region}
+    aws secretsmanager update-secret --secret-id ${secret_id} --secret-string [{\"Root_Token\":\"$${VAULT_TOKEN}\"},{\"Recovery_Key\":\"$${RECOVERY_KEY}\"}] --region ${region}
 else
     # Vault already initialised, which means the db is up which has our role, so login with that role, then exit this script.
     echo "[] Vault DB already initialised. Check we can login with aws method and exit"
