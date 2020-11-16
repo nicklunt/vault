@@ -12,8 +12,8 @@ chmod +x jq-linux64
 mv jq-linux64 /usr/bin/jq
 
 # Get vault from hashicorp
-# wget https://releases.hashicorp.com/vault/1.5.5/vault_1.5.5_linux_amd64.zip  -O /tmp/vault.zip
-wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
+wget https://releases.hashicorp.com/vault/1.5.5/vault_1.5.5_linux_amd64.zip  -O /tmp/vault.zip
+# wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
 
 # Unzip /tmp/vault.zip to /usr/bin/vault
 unzip /tmp/vault.zip -d /usr/bin/
@@ -78,28 +78,36 @@ EOF
 chown -R vault:vault /etc/vault
 chmod -R 0644 /etc/vault/*
 
-export VAULT_ADDR=http://127.0.0.1:8200
-export VAULT_SKIP_VERIFY=true
+# export VAULT_SKIP_VERIFY=true
 
 systemctl start vault
 sleep 20
 
-## Initialise and auto unseal vault
-vault operator init -recovery-shares=1 -recovery-threshold=1 2>&1 | tee ~/vault-init-out.txt
-sleep 20
-vault status | tee -a ~/vault-status.txt
+# Check if vault is already initialised
+INITIALIZED=$(curl $VAULT_ADDR/v1/sys/init | jq '.initialized')
+if [ ${INITIALIZED} != "true" ]; then
+    ## Initialise vault and save token and unseal key
+    vault operator init -recovery-shares=1 -recovery-threshold=1 2>&1 | tee ~/vault-init-out.txt
+    sleep 20
+    vault status | tee -a ~/vault-status.txt
+
+    # Set the VAULT_TOKEN var so we can interact with vault
+    export VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
+
+    # Save the root token to aws secrets manager
+    
+fi
 
 ## Vault should now be running and unsealed
 
-# Set the VAULT_TOKEN var so we can interact with vault
-VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
+
 # Now remove the root token from the system
 # rm -rf ~/vault-init-out.txt
 
-# Enable logging
-# mkdir /var/log/vault
-# chown vault:vault /var/log/vault
-# vault audit enable file file_path=/var/log/vault/vault.log
+# Enable vault logging
+mkdir /var/log/vault
+chown vault:vault /var/log/vault
+vault audit enable file file_path=/var/log/vault/vault.log
 
 # Now vault is up and running, we want to give the instance role of the vault server 
 # the ability to login with the AWS auth engine.
@@ -109,6 +117,10 @@ VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF
 
 # Enable the vault AWS engine
 vault secrets enable aws
+vault secrets enable -path=secret -version=2 kv
+
+# Get the vault-admin-policy.hcl file that was uploaded to S3 in s3.tf
+aws s3 cp s3://${vault_bucket}/vault-admin-policy.hcl /var/tmp/
 
 # Create the admin policy
 vault policy write "admin-policy" /var/tmp/vault-admin-policy.hcl

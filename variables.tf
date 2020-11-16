@@ -5,7 +5,7 @@ variable "region" {
 
 variable "account_id" {
   description = "AWS Account ID - REMOVE BEFORE PUBLISHING"
-  default = "329035065473"
+  default     = "329035065473"
 }
 
 variable "ssh-key" {
@@ -48,6 +48,10 @@ variable "dynamodb-table" {
 
 variable "bucket_name" {
   description = "Bucket to upload any required files"
-  default = "vault-conf-bucket-01010101"
+  default     = "vault-conf-bucket-01010101"
 }
 
+variable "vault-secret-name" {
+  description = "Vault root token secrets manager"
+  default     = "nl-secret-7"
+}

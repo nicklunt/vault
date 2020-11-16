@@ -58,6 +58,16 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
       "iam:GetInstanceProfile"
     ]
   }
+
+  statement {
+    sid       = "S3"
+    effect    = "Allow"
+    resources = ["arn:aws:s3:::${var.bucket_name}/*"]
+
+    actions = [
+      "s3:GetObject"
+    ]
+  }
 }
 
 resource "aws_iam_role" "vault-kms-unseal" {
