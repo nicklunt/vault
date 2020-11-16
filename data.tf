@@ -9,5 +9,6 @@ data "template_file" "userdata" {
     vault_instance_role = "arn:aws:iam:${var.region}:${var.account_id}:role/${aws_iam_role.vault-kms-unseal.name}"
     vault_bucket        = var.bucket_name
     secret-name         = var.vault-secret-name
+    secret_id           = aws_secretsmanager_secret.vault-root-token.id
   }
 }

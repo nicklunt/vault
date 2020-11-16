@@ -12,8 +12,8 @@ chmod +x jq-linux64
 mv jq-linux64 /usr/bin/jq
 
 # Get vault from hashicorp
-wget https://releases.hashicorp.com/vault/1.5.5/vault_1.5.5_linux_amd64.zip  -O /tmp/vault.zip
-# wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
+# wget https://releases.hashicorp.com/vault/1.5.5/vault_1.5.5_linux_amd64.zip  -O /tmp/vault.zip
+wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
 
 # Unzip /tmp/vault.zip to /usr/bin/vault
 unzip /tmp/vault.zip -d /usr/bin/
@@ -85,12 +85,14 @@ chown vault:vault /var/log/vault
 
 systemctl start vault
 
+# Give vault time to properly start and pull the awskms key.
 sleep 30
 
 export VAULT_ADDR=http://127.0.0.1:8200
 
 # Check if vault is already initialised
 INITIALIZED=$(curl $VAULT_ADDR/v1/sys/init | jq '.initialized')
+
 if [ "$${INITIALIZED}" != "true" ]; then
     echo "[] Vault DB not initialised, initialising now"
     ## Initialise vault and save token and unseal key
@@ -102,12 +104,14 @@ if [ "$${INITIALIZED}" != "true" ]; then
     # Set the VAULT_TOKEN var so we can interact with vault
     export VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
 
-    # Save the root token to aws secrets manager
-
+    # Save the root token to aws secrets manager, then we can delete ~/vault-init-out.txt
+    # The secret resource has already been created by terraform.
+    aws secretsmanager update-secret --secret-id ${secret_id} --secret-string "$${VAULT_TOKEN}" --region ${region}
 else
     # Vault already initialised, which means the db is up which has our role, so login with that role, then exit this script.
-    echo "[] Vault DB already initialised. Check we can login with aws method."
+    echo "[] Vault DB already initialised. Check we can login with aws method and exit"
     vault login -method=aws role=admin
+    echo "[] Userdata finished."
     exit
 fi
 
@@ -141,4 +145,6 @@ vault write \
     policies=admin-policy \
     max_ttl=1h \
     bound_iam_principal_arn=${vault_instance_role}
+
+echo "[] Userdata finished."
 

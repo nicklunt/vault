@@ -52,6 +52,6 @@ variable "bucket_name" {
 }
 
 variable "vault-secret-name" {
-  description = "Vault root token secrets manager"
-  default     = "nl-secret-7"
+  description = "Name of the secrets manager secret to save the vault root token to"
+  default     = "nl-secret-10"
 }

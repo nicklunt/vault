@@ -69,6 +69,16 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
       "s3:GetObject"
     ]
   }
+
+  statement {
+    sid       = "SecretsManager"
+    effect    = "Allow"
+    resources = ["${aws_secretsmanager_secret.vault-root-token.id}"]
+
+    actions = [
+      "secretsmanager:UpdateSecret"
+    ]
+  }
 }
 
 resource "aws_iam_role" "vault-kms-unseal" {
