@@ -21,3 +21,7 @@ output "InstanceRoleName" {
 output "vault_instance_role" {
   value = "arn:aws:iam:${var.region}:${var.account_id}:role/${aws_iam_role.vault-kms-unseal.name}"
 }
+
+output "LoginToVault" {
+  value = "vault login -method=aws role=admin"
+}

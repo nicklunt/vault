@@ -78,35 +78,44 @@ EOF
 chown -R vault:vault /etc/vault
 chmod -R 0644 /etc/vault/*
 
+mkdir /var/log/vault
+chown vault:vault /var/log/vault
+
 # export VAULT_SKIP_VERIFY=true
 
 systemctl start vault
-sleep 20
+
+sleep 30
+
+export VAULT_ADDR=http://127.0.0.1:8200
 
 # Check if vault is already initialised
 INITIALIZED=$(curl $VAULT_ADDR/v1/sys/init | jq '.initialized')
-if [ ${INITIALIZED} != "true" ]; then
+if [ "$${INITIALIZED}" != "true" ]; then
+    echo "[] Vault DB not initialised, initialising now"
     ## Initialise vault and save token and unseal key
     vault operator init -recovery-shares=1 -recovery-threshold=1 2>&1 | tee ~/vault-init-out.txt
     sleep 20
+    echo "[] Vault status output"
     vault status | tee -a ~/vault-status.txt
 
     # Set the VAULT_TOKEN var so we can interact with vault
     export VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
 
     # Save the root token to aws secrets manager
-    
-fi
 
-## Vault should now be running and unsealed
+else
+    # Vault already initialised, which means the db is up which has our role, so login with that role, then exit this script.
+    echo "[] Vault DB already initialised. Check we can login with aws method."
+    vault login -method=aws role=admin
+    exit
+fi
 
 
 # Now remove the root token from the system
 # rm -rf ~/vault-init-out.txt
 
 # Enable vault logging
-mkdir /var/log/vault
-chown vault:vault /var/log/vault
 vault audit enable file file_path=/var/log/vault/vault.log
 
 # Now vault is up and running, we want to give the instance role of the vault server 
@@ -116,7 +125,7 @@ vault audit enable file file_path=/var/log/vault/vault.log
 # vault_instance_role="arn:aws:iam:${region}:$(curl -Ss http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId'):role/${instance-role}"
 
 # Enable the vault AWS engine
-vault secrets enable aws
+vault auth enable aws
 vault secrets enable -path=secret -version=2 kv
 
 # Get the vault-admin-policy.hcl file that was uploaded to S3 in s3.tf
@@ -130,6 +139,6 @@ vault write \
     auth/aws/role/admin \
     auth_type=iam \
     policies=admin-policy \
-    max_ttl=1h
+    max_ttl=1h \
     bound_iam_principal_arn=${vault_instance_role}
 

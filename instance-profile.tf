@@ -55,7 +55,8 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
     resources = ["*"]
 
     actions = [
-      "iam:GetInstanceProfile"
+      "iam:GetInstanceProfile",
+      "iam:GetRole"
     ]
   }
 
