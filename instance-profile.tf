@@ -76,7 +76,8 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
     resources = ["${aws_secretsmanager_secret.vault-root-token.id}"]
 
     actions = [
-      "secretsmanager:UpdateSecret"
+      "secretsmanager:UpdateSecret",
+			"secretsmanager:GetSecretValue"
     ]
   }
 }
