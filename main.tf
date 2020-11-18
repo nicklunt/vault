@@ -26,7 +26,7 @@ resource "aws_instance" "vault" {
     Name = "Vault Server"
   }
 
-  depends_on = [aws_kms_key.vault-unseal-key]
+  depends_on = [aws_kms_key.vault-unseal-key, aws_dynamodb_table.vault-table]
 }
 
 

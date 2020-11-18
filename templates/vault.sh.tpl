@@ -28,7 +28,6 @@ fi
 cat << EOF > /etc/profile.d/vault.sh
 export VAULT_ADDR=http://127.0.0.1:8200
 EOF
-# export VAULT_SKIP_VERIFY=true
 
 # Systemd service for vault
 cat > /usr/lib/systemd/system/vault.service <<-EOF
