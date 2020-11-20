@@ -77,7 +77,7 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
 
     actions = [
       "secretsmanager:UpdateSecret",
-			"secretsmanager:GetSecretValue"
+      "secretsmanager:GetSecretValue"
     ]
   }
 }
