@@ -83,17 +83,20 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
 }
 
 resource "aws_iam_role" "vault-kms-unseal" {
-  name               = "vault-kms-role"
+  # name               = "vault-kms-role"
+  name               = var.instance-role
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 resource "aws_iam_role_policy" "vault-kms-unseal" {
-  name   = "vault-kms-unseal-role-policy"
+  # name   = "vault-kms-unseal-role-policy"
+  name   = var.instance-role-policy
   role   = aws_iam_role.vault-kms-unseal.id
   policy = data.aws_iam_policy_document.vault-kms-unseal.json
 }
 
 resource "aws_iam_instance_profile" "vault-kms-unseal" {
-  name = "vault-kms-unseal-instance-profile"
+  # name = "vault-kms-unseal-instance-profile"
+  name = var.instance-profile
   role = aws_iam_role.vault-kms-unseal.name
 }

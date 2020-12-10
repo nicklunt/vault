@@ -16,7 +16,7 @@ mv jq-linux64 /usr/bin/jq
 wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
 
 # Unzip /tmp/vault.zip to /usr/bin/vault
-unzip /tmp/vault.zip -d /usr/bin/
+unzip /tmp/vault.zip -d /usr/bin/ && rm -f /tmp/vault.zip
 
 # Setup vault user
 groupadd --force --system vault
@@ -80,12 +80,10 @@ chmod -R 0644 /etc/vault/*
 mkdir /var/log/vault
 chown vault:vault /var/log/vault
 
-# export VAULT_SKIP_VERIFY=true
-
 systemctl start vault
 
 # Give vault time to properly start and pull the awskms key.
-sleep 30
+sleep 10
 
 export VAULT_ADDR=http://127.0.0.1:8200
 
@@ -109,6 +107,9 @@ if [ "$${INITIALIZED}" != "true" ]; then
     # Save the root token to aws secrets manager, then we can delete ~/vault-init-out.txt
     # The secret resource has already been created by terraform.
     aws secretsmanager update-secret --secret-id ${secret_id} --secret-string [{\"Root_Token\":\"$${VAULT_TOKEN}\"},{\"Recovery_Key\":\"$${RECOVERY_KEY}\"}] --region ${region}
+
+    # Remove the temp file which has the root token details
+    rm -f ~/vault-init-out.txt
 else
     # Vault already initialised, which means the db is up which has our role, so login with that role, then exit this script.
     echo "[] Vault DB already initialised. Check we can login with aws method and exit"
@@ -116,10 +117,6 @@ else
     echo "[] Userdata finished."
     exit
 fi
-
-
-# Now remove the root token from the system
-# rm -rf ~/vault-init-out.txt
 
 # Enable vault logging
 vault audit enable file file_path=/var/log/vault/vault.log
