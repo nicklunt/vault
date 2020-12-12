@@ -24,7 +24,7 @@ if ! getent passwd vault >/dev/null; then
     adduser --system --gid vault --no-create-home --comment "vault owner" --shell /bin/false vault >/dev/null
 fi
 
-# Login profile
+# Login profile picked up when users login to the instance
 cat << EOF > /etc/profile.d/vault.sh
 export VAULT_ADDR=http://127.0.0.1:8200
 EOF
@@ -98,13 +98,13 @@ if [ "$${INITIALIZED}" != "true" ]; then
     echo "[] Vault status output"
     vault status | tee -a ~/vault-status.txt
 
-    # Set the VAULT_TOKEN var so we can interact with vault
+    # Get the VAULT_TOKEN so we can interact with vault
     export VAULT_TOKEN=$(grep '^Initial Root Token:' ~/vault-init-out.txt | awk '{print $NF}')
 
     # Get the unseal key
     export RECOVERY_KEY=$(grep '^Recovery Key' ~/vault-init-out.txt | awk '{print $NF}')
 
-    # Save the root token to aws secrets manager, then we can delete ~/vault-init-out.txt
+    # Save the root token and recovery key to aws secrets manager, then we can delete ~/vault-init-out.txt
     # The secret resource has already been created by terraform.
     aws secretsmanager update-secret --secret-id ${secret_id} --secret-string [{\"Root_Token\":\"$${VAULT_TOKEN}\"},{\"Recovery_Key\":\"$${RECOVERY_KEY}\"}] --region ${region}
 
@@ -118,26 +118,25 @@ else
     exit
 fi
 
+# If we get here vault is not initialised
+
 # Enable vault logging
 vault audit enable file file_path=/var/log/vault/vault.log
-
-# Now vault is up and running, we want to give the instance role of the vault server 
-# the ability to login with the AWS auth engine.
 
 # Our instance role. Used to give this instance access to vault with the AWS engine
 # vault_instance_role="arn:aws:iam:${region}:$(curl -Ss http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId'):role/${instance-role}"
 
-# Enable the vault AWS engine
+# Enable the vault AWS and kv engine
 vault auth enable aws
 vault secrets enable -path=secret -version=2 kv
 
 # Get the vault-admin-policy.hcl file that was uploaded to S3 in s3.tf
 aws s3 cp s3://${vault_bucket}/vault-admin-policy.hcl /var/tmp/
 
-# Create the admin policy
+# Create the admin policy in vault
 vault policy write "admin-policy" /var/tmp/vault-admin-policy.hcl
 
-# Give this instance admin privileges to vault, tied to vault_instance_role.
+# Give this instance admin privileges to vault, tied to this instances vault_instance_role.
 vault write \
     auth/aws/role/admin \
     auth_type=iam \

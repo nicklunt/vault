@@ -17,6 +17,15 @@ resource "aws_subnet" "public-subnet" {
   }
 }
 
+# Internet Gateway
+resource "aws_internet_gateway" "vault-gateway" {
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name = "Vault Internet Gateway"
+  }
+}
+
 # Route Table for IG
 resource "aws_route_table" "public-route-table" {
   vpc_id = aws_vpc.this.id
@@ -52,7 +61,9 @@ resource "aws_security_group" "sg-vault" {
       from_port   = port.value
       to_port     = port.value
       protocol    = "TCP"
-      cidr_blocks = ["0.0.0.0/0"]
+
+      # Replace 0.0.0.0/0 with your routers ip address/32 (whatysmyip.com)
+      cidr_blocks = ["86.23.82.87/32"]
     }
   }
 
@@ -68,12 +79,4 @@ resource "aws_security_group" "sg-vault" {
   }
 }
 
-# Internet Gateway
-resource "aws_internet_gateway" "vault-gateway" {
-  vpc_id = aws_vpc.this.id
-
-  tags = {
-    Name = "Vault Internet Gateway"
-  }
-}
 

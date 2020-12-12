@@ -1,5 +1,4 @@
 data "template_file" "userdata" {
-  #template = "${file("${path.module}/templates/vault.sh.tpl")}"
   template = file("${path.module}/templates/vault.sh.tpl")
 
   vars = {

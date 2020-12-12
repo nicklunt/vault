@@ -26,7 +26,8 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
   statement {
     sid       = "VaultDynamoDB"
     effect    = "Allow"
-    resources = ["${aws_dynamodb_table.vault-table.arn}"]
+    # resources = ["${aws_dynamodb_table.vault-table.arn}"]
+    resources = [aws_dynamodb_table.vault-table.arn]
 
     actions = [
       "dynamodb:DescribeLimits",
@@ -73,7 +74,9 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
   statement {
     sid       = "SecretsManager"
     effect    = "Allow"
-    resources = ["${aws_secretsmanager_secret.vault-root-token.id}"]
+    # resources = ["${aws_secretsmanager_secret.vault-root-token.id}"]
+    resources = [aws_secretsmanager_secret.vault-root-token.id]
+
 
     actions = [
       "secretsmanager:UpdateSecret",
@@ -83,20 +86,17 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
 }
 
 resource "aws_iam_role" "vault-kms-unseal" {
-  # name               = "vault-kms-role"
   name               = var.instance-role
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 resource "aws_iam_role_policy" "vault-kms-unseal" {
-  # name   = "vault-kms-unseal-role-policy"
   name   = var.instance-role-policy
   role   = aws_iam_role.vault-kms-unseal.id
   policy = data.aws_iam_policy_document.vault-kms-unseal.json
 }
 
 resource "aws_iam_instance_profile" "vault-kms-unseal" {
-  # name = "vault-kms-unseal-instance-profile"
   name = var.instance-profile
   role = aws_iam_role.vault-kms-unseal.name
 }
