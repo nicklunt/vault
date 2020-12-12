@@ -51,7 +51,7 @@ variable "dynamo-read-write" {
 
 variable "vault-secret-name" {
   description = "Name of the secrets manager secret to save the vault root token to"
-  default = "vault-secret-name"
+  default     = "vault-secret-name"
 }
 
 variable "instance-role" {

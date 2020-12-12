@@ -14,12 +14,6 @@ resource "aws_instance" "vault" {
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.vault-kms-unseal.name
 
-  # Upload the admin policy to the server. Using file provisioner for the sake of simplicity
-  # provisioner "file" {
-  #   source      = "templates/vault-admin-policy.hcl"
-  #   destination = "/var/tmp/vault-admin-policy.hcl"
-  # }
-
   user_data = data.template_file.userdata.rendered
 
   tags = {

@@ -24,8 +24,8 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
   }
 
   statement {
-    sid       = "VaultDynamoDB"
-    effect    = "Allow"
+    sid    = "VaultDynamoDB"
+    effect = "Allow"
     # resources = ["${aws_dynamodb_table.vault-table.arn}"]
     resources = [aws_dynamodb_table.vault-table.arn]
 
@@ -74,7 +74,6 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
   statement {
     sid       = "SecretsManager"
     effect    = "Allow"
-    # resources = ["${aws_secretsmanager_secret.vault-root-token.id}"]
     resources = [aws_secretsmanager_secret.vault-root-token.id]
 
 
