@@ -1,4 +1,4 @@
-## Setup a Hashicorp Vault server which 
+## Setup a Hashicorp Vault server with Terraform 14 which 
 - [x] Installs Hashicorp Vault
 - [x] Uses AWS KMS to unseal 
 - [x] Vault data is stored on AWS DynamoDB
