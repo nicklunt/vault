@@ -1,23 +1,35 @@
 
-# Change the variables below to fit.
-
+# Change region for your env
 variable "region" {
   type    = string
   default = "eu-west-2"
 }
 
+# Change this to your aws account
 variable "account_id" {
   description = "AWS Account ID - REMOVE BEFORE PUBLISHING"
+  type        = string
   default     = "329035065473"
 }
 
+# Change this to your external IP
+variable "my_ip" {
+  description = "my external IP address"
+  type        = string
+  default     = "86.23.82.87/32"
+}
+
+# May need to change the AMI if not in eu-west-2
 variable "ami" {
   description = "eu-west-2 Amazon Linux 2 AMI"
+  type        = string
   default     = "ami-0a669382ea0feb73a"
 }
 
+# May need to change the bucket to something unique
 variable "bucket_name" {
   description = "Bucket to upload any required files"
+  type        = string
   default     = "vault-conf-bucket-01010101"
 }
 
@@ -51,7 +63,7 @@ variable "dynamo-read-write" {
 
 variable "vault-secret-name" {
   description = "Name of the secrets manager secret to save the vault root token to"
-  default     = "vault-secret-name"
+  default     = "vault-secrets"
 }
 
 variable "instance-role" {

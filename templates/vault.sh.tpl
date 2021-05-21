@@ -107,7 +107,10 @@ if [ "$${INITIALIZED}" != "true" ]; then
 
     # Save the root token and recovery key to aws secrets manager, then we can delete ~/vault-init-out.txt
     # The secret resource has already been created by terraform.
-    aws secretsmanager update-secret --secret-id ${secret_id} --secret-string [{\"Root_Token\":\"$${VAULT_TOKEN}\"},{\"Recovery_Key\":\"$${RECOVERY_KEY}\"}] --region ${region}
+    # aws secretsmanager update-secret --secret-id ${secret_id} --secret-string [{\"Root_Token\":\"$${VAULT_TOKEN}\"},{\"Recovery_Key\":\"$${RECOVERY_KEY}\"}] --region ${region}
+    aws secretsmanager update-secret --secret-id ${secret_id} --secret-string '{"Root_Token":"'"$${VAULT_TOKEN}"'"},{"Recovery_Key":"'"$${RECOVERY_KEY}"'"}' --region ${region}
+
+    # '{"username":"anika","password":"'"$serverPwd"'"}'
 
     # Remove the temp file which has the root token details
     rm -f ~/vault-init-out.txt

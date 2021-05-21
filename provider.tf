@@ -1,6 +1,6 @@
 provider "aws" {
-#  version = "~> 3.14"
-  region  = var.region
+  #  version = "~> 3.14"
+  region = var.region
 }
 
 #terraform {

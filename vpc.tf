@@ -58,12 +58,10 @@ resource "aws_security_group" "sg-vault" {
     for_each = var.ingress-rules
     iterator = port
     content {
-      from_port = port.value
-      to_port   = port.value
-      protocol  = "TCP"
-
-      # Replace 0.0.0.0/0 with your routers ip address/32 (whatysmyip.com)
-      cidr_blocks = ["86.23.82.87/32"]
+      from_port   = port.value
+      to_port     = port.value
+      protocol    = "TCP"
+      cidr_blocks = [var.my_ip]
     }
   }
 
