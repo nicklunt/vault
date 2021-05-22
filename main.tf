@@ -1,4 +1,6 @@
 # Key pair generated from our own ssh key so we can ssh to the instance
+# ssh-keygen -y -f ~/.ssh/id_rsa > public_key
+
 resource "aws_key_pair" "ssh-keypair" {
   key_name   = "ssh-keypair"
   public_key = file(var.ssh-key)
@@ -23,6 +25,7 @@ resource "aws_instance" "vault" {
     Name = "Vault Server"
   }
 
+  # The vault instance needs the unseal key and dynamodb table in place before it launches.
   depends_on = [aws_kms_key.vault-unseal-key, aws_dynamodb_table.vault-table]
 }
 

@@ -1,3 +1,4 @@
+# The vault root token and recovery key saved to AWS secrets manager
 resource "aws_secretsmanager_secret" "vault-root-token" {
   name                    = var.vault-secret-name
   description             = "Vault root token"

@@ -26,7 +26,6 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
   statement {
     sid    = "VaultDynamoDB"
     effect = "Allow"
-    # resources = ["${aws_dynamodb_table.vault-table.arn}"]
     resources = [aws_dynamodb_table.vault-table.arn]
 
     actions = [

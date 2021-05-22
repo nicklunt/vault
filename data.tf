@@ -1,3 +1,5 @@
+# The template file 'vault.sh' gets run as userdata.
+# This template_file data populates any ${var} varabiles in that script.
 data "template_file" "userdata" {
   template = file("${path.module}/templates/vault.sh.tpl")
 
