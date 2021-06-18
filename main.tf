@@ -29,4 +29,17 @@ resource "aws_instance" "vault" {
   depends_on = [aws_kms_key.vault-unseal-key, aws_dynamodb_table.vault-table]
 }
 
+resource "aws_ebs_volume" "vault-volume" {
+  availability_zone = aws_instance.vault.availability_zone
+  size              = 50
+  encrypted         = true
+  #kms_key_id          = var.somekey
+}
+
+resource "aws_volume_attachment" "vault-volume-attachment" {
+  device_name = "/dev/xvdb"
+  instance_id = aws_instance.vault.id
+  volume_id   = aws_ebs_volume.vault-volume.id
+}
+
 
