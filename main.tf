@@ -10,7 +10,7 @@ resource "aws_key_pair" "ssh-keypair" {
 resource "aws_instance" "vault" {
   ami                         = var.ami
   key_name                    = aws_key_pair.ssh-keypair.id
-  instance_type               = "t2.micro"
+  instance_type               = var.aws_instance_type
   subnet_id                   = aws_subnet.public-subnet.id
   vpc_security_group_ids      = [aws_security_group.sg-vault.id]
   associate_public_ip_address = true
@@ -18,7 +18,7 @@ resource "aws_instance" "vault" {
   user_data                   = data.template_file.userdata.rendered
 
   root_block_device {
-    volume_size = 300
+    volume_size = var.root_volume_size
   }
 
   tags = {

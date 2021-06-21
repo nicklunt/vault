@@ -27,6 +27,20 @@ variable "ami" {
   default     = "ami-0a669382ea0feb73a"
 }
 
+# I'm using a small instance type for testing
+variable "aws_instance_type" {
+  description = "aws instance type"
+  type = string
+  default = "t2.micro"
+}
+
+# Size of the OS volume
+variable "root_volume_size" {
+  description = "size of the os volume in GB"
+  type = string
+  default = "50"
+}
+
 # May need to change the bucket to something unique
 variable "bucket_name" {
   description = "Bucket to upload any required files"
