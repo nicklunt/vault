@@ -30,15 +30,15 @@ variable "ami" {
 # I'm using a small instance type for testing
 variable "aws_instance_type" {
   description = "aws instance type"
-  type = string
-  default = "t2.micro"
+  type        = string
+  default     = "t2.micro"
 }
 
 # Size of the OS volume
 variable "root_volume_size" {
   description = "size of the os volume in GB"
-  type = string
-  default = "50"
+  type        = string
+  default     = "50"
 }
 
 # May need to change the bucket to something unique
@@ -61,23 +61,23 @@ variable "ssh-key" {
 
 variable "vpc-cidr" {
   description = "VPC CIDR"
-  default = "10.0.0.0/16"
+  default     = "10.0.0.0/16"
 }
 
 variable "public-cidr" {
   description = "Public CIDR"
-  default = "10.0.1.0/24"
+  default     = "10.0.1.0/24"
 }
 
 variable "private-subnet" {
   description = "Private CIDR"
-  default = "10.0.2.0/24"
+  default     = "10.0.2.0/24"
 }
 
 variable "dynamodb-table" {
   description = "DynamoDB table name"
-  type    = string
-  default = "vault-table"
+  type        = string
+  default     = "vault-table"
 }
 
 variable "dynamo-read-write" {
@@ -97,27 +97,27 @@ variable "vault-recovery-key" {
 
 variable "instance-role" {
   description = "The instance role"
-  default = "vault-role"
+  default     = "vault-role"
 }
 
 variable "instance-role-policy" {
   description = "The policy"
-  default = "vault-role-policy"
+  default     = "vault-role-policy"
 }
 
 variable "instance-profile" {
   description = "The profile"
-  default = "vault-instance-profile"
+  default     = "vault-instance-profile"
 }
 
 variable "ingress-rules" {
   description = "Allow SSH and Vault Port inbound"
-  type    = list(number)
-  default = [22, 8200]
+  type        = list(number)
+  default     = [22, 8200]
 }
 
 variable "egress-rules" {
   description = "Allow HTTP and HTTPS outbound"
-  type    = list(number)
-  default = [80, 443]
+  type        = list(number)
+  default     = [80, 443]
 }
