@@ -8,7 +8,7 @@ resource "aws_s3_bucket" "vault_config_bucket" {
   }
 }
 
-# Upload the vauld admin policy to S3
+# Upload the vault admin policy to S3
 resource "aws_s3_bucket_object" "vault_admin_policy" {
   bucket = aws_s3_bucket.vault_config_bucket.id
   key    = "vault-admin-policy.hcl"

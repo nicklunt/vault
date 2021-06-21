@@ -12,9 +12,6 @@ chmod +x jq-linux64
 mv jq-linux64 /usr/bin/jq
 
 # Get vault from hashicorp
-# wget https://releases.hashicorp.com/vault/1.5.5/vault_1.5.5_linux_amd64.zip  -O /tmp/vault.zip
-#wget https://releases.hashicorp.com/vault/1.6.0/vault_1.6.0_linux_amd64.zip -O /tmp/vault.zip
-#wget https://releases.hashicorp.com/vault/1.7.1/vault_1.7.1_linux_amd64.zip -O /tmp/vault.zip
 wget https://releases.hashicorp.com/vault/1.7.3/vault_1.7.3_linux_amd64.zip -O /tmp/vault.zip
 
 # Unzip /tmp/vault.zip to /usr/bin/vault
@@ -96,7 +93,6 @@ if [ "$${INITIALIZED}" != "true" ]; then
     echo "[] Vault DB not initialised, initialising now"
     ## Initialise vault and save token and unseal key
     vault operator init -recovery-shares=1 -recovery-threshold=1 2>&1 | tee ~/vault-init-out.txt
-    sleep 20
     echo "[] Vault status output"
     vault status | tee -a ~/vault-status.txt
 
@@ -107,9 +103,9 @@ if [ "$${INITIALIZED}" != "true" ]; then
     export RECOVERY_KEY=$(grep '^Recovery Key' ~/vault-init-out.txt | awk '{print $NF}')
 
     # Save the root token and recovery key to aws secrets manager, then we can delete ~/vault-init-out.txt
-    # The secret resource has already been created by terraform.
-    # aws secretsmanager update-secret --secret-id ${secret_id} --secret-string [{\"Root_Token\":\"$${VAULT_TOKEN}\"},{\"Recovery_Key\":\"$${RECOVERY_KEY}\"}] --region ${region}
-    aws secretsmanager update-secret --secret-id ${secret_id} --secret-string '{"Root_Token":"'"$${VAULT_TOKEN}"'"},{"Recovery_Key":"'"$${RECOVERY_KEY}"'"}' --region ${region}
+    # The secret resources have already been created by terraform (secrets-manager.tf)
+    aws secretsmanager update-secret --secret-id ${secret_token_id} --secret-string  "$${VAULT_TOKEN}" --region ${region}
+    aws secretsmanager update-secret --secret-id ${secret_recovery_id} --secret-string "$${RECOVERY_KEY}" --region ${region}
 
     # '{"username":"anika","password":"'"$serverPwd"'"}'
 

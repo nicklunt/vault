@@ -80,7 +80,7 @@ data "aws_iam_policy_document" "vault-kms-unseal" {
   statement {
     sid       = "SecretsManager"
     effect    = "Allow"
-    resources = [aws_secretsmanager_secret.vault-root-token.id]
+    resources = [aws_secretsmanager_secret.vault-root-token.id, aws_secretsmanager_secret.vault-recovery-key.id]
 
 
     actions = [

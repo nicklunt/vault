@@ -1,3 +1,4 @@
+################### CHANGE THESE VARS TO SUIT YOUR ENVIRONMENT ###################
 
 # Change region for your env
 variable "region" {
@@ -33,25 +34,34 @@ variable "bucket_name" {
   default     = "vault-conf-bucket-01010101"
 }
 
+# If running terraform from linux, generate the ssh-key with 
+# cd <vault terraform directory>
+# ssh-keygen -y -f ~/.ssh/id_rsa > public_key
 variable "ssh-key" {
   type        = string
   description = "File holding my public ssh key: ssh-keygen -y -f ~/.ssh/id_rsa > public_key"
   default     = "public-key"
 }
 
+################### VARS BELOW SHOULD BE OK AS THEY ARE ###################
+
 variable "vpc-cidr" {
+  description = "VPC CIDR"
   default = "10.0.0.0/16"
 }
 
 variable "public-cidr" {
+  description = "Public CIDR"
   default = "10.0.1.0/24"
 }
 
 variable "private-subnet" {
+  description = "Private CIDR"
   default = "10.0.2.0/24"
 }
 
 variable "dynamodb-table" {
+  description = "DynamoDB table name"
   type    = string
   default = "vault-table"
 }
@@ -61,29 +71,39 @@ variable "dynamo-read-write" {
   default     = 1
 }
 
-variable "vault-secret-name" {
+variable "vault-root-token" {
   description = "Name of the secrets manager secret to save the vault root token to"
-  default     = "vault-secrets"
+  default     = "vault-root-token"
+}
+
+variable "vault-recovery-key" {
+  description = "Name of the secrets manager secret to save the vault recovery key to"
+  default     = "vault-recovery-key"
 }
 
 variable "instance-role" {
+  description = "The instance role"
   default = "vault-role"
 }
 
 variable "instance-role-policy" {
+  description = "The policy"
   default = "vault-role-policy"
 }
 
 variable "instance-profile" {
+  description = "The profile"
   default = "vault-instance-profile"
 }
 
 variable "ingress-rules" {
+  description = "Allow SSH and Vault Port inbound"
   type    = list(number)
   default = [22, 8200]
 }
 
 variable "egress-rules" {
+  description = "Allow HTTP and HTTPS outbound"
   type    = list(number)
   default = [80, 443]
 }
