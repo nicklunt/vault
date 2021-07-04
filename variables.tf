@@ -10,14 +10,14 @@ variable "region" {
 variable "account_id" {
   description = "AWS Account ID - REMOVE BEFORE PUBLISHING"
   type        = string
-  default     = "329035065473"
+  default     = "01234567890"
 }
 
 # Change this to your external IP
 variable "my_ip" {
   description = "my external IP address"
   type        = string
-  default     = "86.23.82.87/32"
+  default     = "aa.bb.cc.dd/32"
 }
 
 # May need to change the AMI if not in eu-west-2
